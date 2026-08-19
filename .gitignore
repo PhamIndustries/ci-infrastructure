@@ -1,0 +1,8 @@
+.DS_Store
+.credentials
+.credentials_rsaparams
+.runner
+.runner_file.lock
+_work/
+_diag/
+*.tar.gz

@@ -1,0 +1,93 @@
+# Reusable Python + uv CI for Skynet fleet repos (self-hosted Mac).
+# Callers: uses: vuudoopham/ci-templates/.github/workflows/python-uv-ci.yml@v1
+#
+# Labels (default): self-hosted, macOS, ARM64, skynet
+
+name: python-uv-ci
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Python version (informational; uv manages env)"
+        type: string
+        default: "3.11"
+      unit-command:
+        description: "Hermetic unit test command"
+        type: string
+        default: "bash scripts/ci-unit.sh"
+      integration-command:
+        description: "Optional integration test command"
+        type: string
+        default: "bash scripts/ci-integration.sh"
+      run-integration:
+        description: "Run integration job when scripts/ci-integration.sh exists"
+        type: boolean
+        default: false
+      runs-on:
+        description: "JSON array of runner labels"
+        type: string
+        default: '["self-hosted", "macOS", "ARM64", "skynet"]'
+      timeout-minutes:
+        description: "Job timeout"
+        type: number
+        default: 25
+
+concurrency:
+  group: ci-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: unit
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    # Never run untrusted fork PR code on self-hosted runners
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Environment
+        run: |
+          set -euo pipefail
+          echo "host=$(hostname)"
+          echo "python-version-input=${{ inputs.python-version }}"
+          command -v uv
+          uv --version
+          python3 --version
+
+      - name: Unit tests
+        run: ${{ inputs.unit-command }}
+
+  integration:
+    name: integration
+    needs: unit
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    if: |
+      inputs.run-integration &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Preflight (optional)
+        run: |
+          set -euo pipefail
+          if [[ -x scripts/ci-preflight.sh ]]; then
+            bash scripts/ci-preflight.sh
+          elif [[ -f scripts/ci-preflight.sh ]]; then
+            bash scripts/ci-preflight.sh
+          else
+            echo "No scripts/ci-preflight.sh — skipping"
+          fi
+
+      - name: Integration tests
+        run: |
+          set -euo pipefail
+          if [[ ! -f scripts/ci-integration.sh ]]; then
+            echo "scripts/ci-integration.sh missing — fail closed when run-integration=true"
+            exit 1
+          fi
+          ${{ inputs.integration-command }}

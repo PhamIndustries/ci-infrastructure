@@ -1,0 +1,35 @@
+# Standalone copy-paste CI (when workflow_call to ci-templates is unavailable).
+# Keep in sync with ../.github/workflows/python-uv-ci.yml
+
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: ci-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: unit
+    runs-on: [self-hosted, macOS, ARM64, skynet]
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Environment
+        run: |
+          set -euo pipefail
+          echo "host=$(hostname)"
+          command -v uv
+          uv --version
+          python3 --version
+
+      - name: Unit tests
+        run: bash scripts/ci-unit.sh

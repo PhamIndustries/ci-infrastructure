@@ -1,0 +1,15 @@
+# Thin wrapper example — pin reusable workflow @v1
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  ci:
+    uses: vuudoopham/ci-templates/.github/workflows/python-uv-ci.yml@v1
+    with:
+      unit-command: bash scripts/ci-unit.sh
+      run-integration: false
