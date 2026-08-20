@@ -1,25 +1,33 @@
 # ci-templates
 
-Shared **GitHub Actions** patterns for the Skynet Mac fleet (`rag-orchestrator`, `rag-dashboard`, `domain-rag`, scrapers, …).
+Shared **GitHub Actions** patterns for the Skynet Mac fleet under org **[PhamIndustries](https://github.com/PhamIndustries)**  
+(display name **Pham Industries**).
+
+**Agents:** start at **[docs/AGENT_CI.md](docs/AGENT_CI.md)** — single checklist to adopt CI in any fleet repo.
 
 ## Contract
 
 | Piece | Standard |
 |-------|----------|
-| Runner labels | `self-hosted`, `macOS`, `ARM64`, `skynet` |
-| Triggers | Push to `main`/`master` + PRs |
-| Unit entrypoint | `scripts/ci-unit.sh` (required, hermetic) |
-| Integration | `scripts/ci-integration.sh` (optional) |
-| Preflight | `scripts/ci-preflight.sh` (optional) |
-| Reusable workflow | `.github/workflows/python-uv-ci.yml` — pin **`@v1`** |
+| Org | `PhamIndustries` |
+| Runner | **One org-level runner:** `skynet-ms-org-1` |
+| Labels | `self-hosted`, `macOS`, `ARM64`, `skynet` |
+| Triggers | Push to `main`/`master` + PRs into those branches |
+| Unit | `scripts/ci-unit.sh` — **required**, hermetic |
+| Integration | `scripts/ci-integration.sh` + `scripts/ci-preflight.sh` when enabled |
+| Reusable workflow | `PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1` |
 
-**One self-hosted runner process per GitHub repo** on the Mac (personal accounts cannot share a single repo-scoped runner across repos).
+Fork PRs do **not** run on the self-hosted runner (guard in the reusable workflow).
 
-## Quick adopt
+## Quick adopt (agent / human)
 
-1. Register a runner for the repo — see [docs/RUNNER_MAC.md](docs/RUNNER_MAC.md).
-2. Add `scripts/ci-unit.sh` (see [docs/REPO_CI.md](docs/REPO_CI.md)).
-3. Add thin `.github/workflows/ci.yml`:
+1. Ensure the repo lives under **`PhamIndustries`** (or can call the public reusable workflow). Org runner already serves all org repos — **do not** register a new per-repo runner. See [docs/RUNNER_MAC.md](docs/RUNNER_MAC.md).
+2. Add scripts (copy from [examples/](examples/)):
+   - `scripts/ci-unit.sh` (**required**)
+   - `scripts/ci-preflight.sh` + `scripts/ci-integration.sh` (when enabling integration)
+3. Add pytest marker in `pyproject.toml` — see [docs/TEST_LAYERS.md](docs/TEST_LAYERS.md).
+4. Mark live-touching tests `@pytest.mark.integration`.
+5. Add thin `.github/workflows/ci.yml`:
 
 ```yaml
 name: CI
@@ -33,16 +41,32 @@ jobs:
     uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
     with:
       unit-command: bash scripts/ci-unit.sh
-      run-integration: false
+      run-integration: true   # set false until preflight + marks exist
+      timeout-minutes: 30
 ```
 
-Or copy [examples/ci.yml](examples/ci.yml) if you cannot `workflow_call` yet.
+Full checklist: [docs/REPO_CI.md](docs/REPO_CI.md) · Fleet standard: [docs/FLEET_CI_STANDARD.md](docs/FLEET_CI_STANDARD.md).
 
-## Test layers
+## Docs map
 
-See [docs/TEST_LAYERS.md](docs/TEST_LAYERS.md) — unit = offline; integration = live localhost services.
+| Doc | Audience |
+|-----|----------|
+| [docs/AGENT_CI.md](docs/AGENT_CI.md) | **Agents** — start here |
+| [docs/REPO_CI.md](docs/REPO_CI.md) | Adopt checklist |
+| [docs/TEST_LAYERS.md](docs/TEST_LAYERS.md) | Unit vs integration |
+| [docs/RUNNER_MAC.md](docs/RUNNER_MAC.md) | Org runner (primary) + legacy per-repo |
+| [docs/FLEET_CI_STANDARD.md](docs/FLEET_CI_STANDARD.md) | Full agent implementation guide |
+| [docs/ORG_CUTOVER.md](docs/ORG_CUTOVER.md) | Org migration / Ops A–G |
+| [docs/ORG_CUTOVER_AND_FLEET_CI_STANDARD.md](docs/ORG_CUTOVER_AND_FLEET_CI_STANDARD.md) | Full accepted design (archive / deep reference) |
+
+## Reference implementations
+
+| Repo | Notes |
+|------|--------|
+| `PhamIndustries/rag-orchestrator` | Unit + integration; fleet preflight curls |
+| `PhamIndustries/rag-dashboard` | Unit (+ node `.mjs`) + shell live integration |
 
 ## Versioning
 
 - Breaking input changes → `v2`
-- Compatible additions → `v1.x` tags; callers may stay on `@v1`
+- Compatible additions → move `v1` tag (callers stay on `@v1`)

@@ -1,60 +1,74 @@
-# Self-hosted Mac runner (per repo)
+# Self-hosted Mac runner (Skynet-MS)
 
-Personal GitHub: **one runner registration per repository**. Multiple runners can share one machine.
+## Primary model (current): one org runner
 
-## Labels (fleet standard)
+Org **PhamIndustries** uses a **single** self-hosted runner for all org repos:
 
-```text
-self-hosted, macOS, ARM64, skynet
-```
+| Field | Value |
+|-------|--------|
+| Name | `skynet-ms-org-1` |
+| Host dir | `~/Projects/actions-runner-org-1` |
+| Labels | `self-hosted`, `macOS`, `ARM64`, `skynet` |
+| LaunchAgent | `actions.runner.PhamIndustries.skynet-ms-org-1` |
+| GitHub UI | Org → Settings → Actions → Runners |
 
-Existing `webui-model-configs` runner used `skynet-ms` historically — add `skynet` when reconfiguring, or keep both.
+**Adopting CI in a new fleet repo:** transfer/create under `PhamIndustries` and add the thin workflow — **do not** install another runner.
 
-## Install (example: rag-orchestrator)
+### Ops (org runner)
 
 ```bash
-REPO=rag-orchestrator
-OWNER=vuudoopham
-DIR="$HOME/Projects/actions-runner-${REPO}"
-mkdir -p "$DIR" && cd "$DIR"
-
-# Match version used by sibling runners when possible (see actions-runner-webui-model-configs/bin.*)
-curl -fsSL -o actions-runner-osx-arm64.tar.gz \
-  https://github.com/actions/runner/releases/download/v2.336.0/actions-runner-osx-arm64-2.336.0.tar.gz
-tar xzf actions-runner-osx-arm64.tar.gz
-
-# Create a registration token in the browser:
-#   https://github.com/${OWNER}/${REPO}/settings/actions/runners/new
-# Or via API (admin):
-#   gh api -X POST "repos/${OWNER}/${REPO}/actions/runners/registration-token" --jq .token
-
-./config.sh \
-  --url "https://github.com/${OWNER}/${REPO}" \
-  --token "<REGISTRATION_TOKEN>" \
-  --name "skynet-ms-${REPO}" \
-  --labels "self-hosted,macOS,ARM64,skynet" \
-  --work "_work" \
-  --unattended
-
-./svc.sh install
-./svc.sh start
+cd ~/Projects/actions-runner-org-1
 ./svc.sh status
+./svc.sh stop
+./svc.sh start
 ```
 
-Repeat for `rag-dashboard` (and any other fleet repo).
+Clear stale checkouts when idle:
 
-## Ops
+```bash
+rm -rf ~/Projects/actions-runner-org-1/_work/*
+```
 
-| Task | Command |
-|------|---------|
-| Status | `cd ~/Projects/actions-runner-<repo> && ./svc.sh status` |
-| Stop | `./svc.sh stop` |
-| Start | `./svc.sh start` |
-| Uninstall | `./svc.sh stop && ./svc.sh uninstall` |
+### Re-register (disaster only)
+
+```bash
+ORG=PhamIndustries
+DIR="$HOME/Projects/actions-runner-org-1"
+VER=2.336.0
+# … extract runner tarball if needed …
+TOKEN=$(gh api -X POST "orgs/${ORG}/actions/runners/registration-token" --jq .token)
+cd "$DIR"
+./config.sh \
+  --url "https://github.com/${ORG}" \
+  --token "$TOKEN" \
+  --name "skynet-ms-org-1" \
+  --labels "self-hosted,macOS,ARM64,skynet" \
+  --work "_work" \
+  --unattended \
+  --replace
+./svc.sh install
+./svc.sh start
+```
 
 Do **not** commit registration tokens or `.credentials` / `.runner` files.
 
+## Legacy: per-repo runners (emergency / rollback)
+
+Personal GitHub accounts cannot share one repo-scoped runner across repos. Before the org cutover we used `actions-runner-<repo>` per repository. Prefer **not** to recreate these.
+
+If you must (rollback):
+
+```bash
+REPO=rag-orchestrator
+OWNER=PhamIndustries   # or vuudoopham during rollback
+DIR="$HOME/Projects/actions-runner-${REPO}"
+# config.sh --url https://github.com/${OWNER}/${REPO} --name skynet-ms-${REPO} ...
+```
+
+Historical label `skynet-ms` (webui) is retired; use `skynet`.
+
 ## Security
 
-- Self-hosted runners must **not** run workflows from **fork PRs** (workflow `if:` guards this).
+- Self-hosted runners must **not** run workflows from **fork PRs** (reusable workflow `if:` guard).
 - Prefer hermetic unit jobs; keep secrets out of logs.
+- One Mac: serialize heavy integration / index / rsync when possible.

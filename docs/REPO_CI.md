@@ -1,21 +1,29 @@
 # Adopt CI in a fleet repo
 
-Checklist for any Python repo on Skynet-MS.
+Checklist for any Python (or unittest) repo on Skynet-MS under **PhamIndustries**.
 
-## 1. Runner (once per repo)
+**Agents:** prefer [AGENT_CI.md](AGENT_CI.md).
 
-See [RUNNER_MAC.md](RUNNER_MAC.md). Confirm **Idle** under  
-GitHub → repo → **Settings → Actions → Runners**.
+## 1. Runner (org — already done)
 
-Labels required: `self-hosted`, `macOS`, `ARM64`, `skynet`.
+Fleet CI uses the **org** runner `skynet-ms-org-1` with labels:
+
+```text
+self-hosted, macOS, ARM64, skynet
+```
+
+Confirm **Idle/Online** under  
+GitHub → **PhamIndustries** → **Settings → Actions → Runners**.
+
+**Do not** register a new per-repo runner for normal adoption. See [RUNNER_MAC.md](RUNNER_MAC.md).
 
 ## 2. Scripts
 
-Create at repo root:
+Create at repo root (copy from [../examples/](../examples/)):
 
 ### `scripts/ci-unit.sh` (required)
 
-Must be **hermetic** (no OWUI / Qdrant / control serve):
+Must be **hermetic** (no OWUI / Qdrant / control serve / live scrapes):
 
 ```bash
 #!/usr/bin/env bash
@@ -25,25 +33,25 @@ uv sync --extra dev   # or: uv sync --group dev
 uv run python -m pytest -q -m "not integration"
 ```
 
-### `scripts/ci-integration.sh` (optional)
+### `scripts/ci-preflight.sh` (required if `run-integration: true`)
 
-Only when live services are intentional:
+Curl health endpoints this repo’s integration tests need; **exit non-zero** if required deps are down.  
+Template: [../examples/ci-preflight.sh](../examples/ci-preflight.sh).
+
+### `scripts/ci-integration.sh` (required if `run-integration: true`)
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-bash scripts/ci-preflight.sh
-uv run python -m pytest -q -m integration
+# preflight is invoked by the reusable workflow before this script
+uv sync --extra dev   # or --group dev
+uv run python -m pytest -q -m integration --tb=short
 ```
 
-### `scripts/ci-preflight.sh` (optional)
-
-Print host + curl health of dependencies; exit non-zero if required services are down.
+If no integration tests are collected yet, use exit-code `5` handling like [../examples/ci-integration.sh](../examples/ci-integration.sh).
 
 ## 3. Pytest markers
-
-In `pyproject.toml`:
 
 ```toml
 [tool.pytest.ini_options]
@@ -54,9 +62,9 @@ markers = [
 
 Mark live tests: `@pytest.mark.integration`.
 
-## 4. Workflow
+**webui-model-configs** may keep **unittest** for unit (`scripts/ci-unit.sh` wrapping existing runners); pytest marker DoD applies only where pytest is used.
 
-Prefer reusable call (this repo public / accessible):
+## 4. Workflow
 
 ```yaml
 # .github/workflows/ci.yml
@@ -71,16 +79,26 @@ jobs:
     uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
     with:
       unit-command: bash scripts/ci-unit.sh
-      run-integration: false
+      run-integration: true
+      timeout-minutes: 30
 ```
 
-Fallback: copy [../examples/ci-standalone.yml](../examples/ci-standalone.yml) into `.github/workflows/ci.yml`.
+Use `run-integration: false` only until preflight + scripts exist.
 
-## 5. Verify
+Fallback (no `workflow_call`): copy [../examples/ci-standalone.yml](../examples/ci-standalone.yml).
+
+## 5. Verify / Definition of Done
 
 ```bash
-bash scripts/ci-unit.sh          # local
-git push                         # should enqueue Actions on self-hosted
+bash scripts/ci-unit.sh                 # local, services may be down
+bash scripts/ci-preflight.sh            # required deps up
+bash scripts/ci-integration.sh          # local
+git push                                # Actions on skynet-ms-org-1
 ```
+
+- [ ] Unit job green on org runner  
+- [ ] Integration job green (or explicitly `run-integration: false` with reason)  
+- [ ] No live service calls in unmarked tests  
+- [ ] Fork PR guard respected (no self-hosted fork runs)
 
 Enable **branch protection → require CI** only after the first green run.

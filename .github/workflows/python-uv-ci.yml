@@ -72,16 +72,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preflight (optional)
+      - name: Preflight
         run: |
           set -euo pipefail
-          if [[ -x scripts/ci-preflight.sh ]]; then
-            bash scripts/ci-preflight.sh
-          elif [[ -f scripts/ci-preflight.sh ]]; then
-            bash scripts/ci-preflight.sh
-          else
-            echo "No scripts/ci-preflight.sh — skipping"
+          # Fail closed when integration is enabled (K15)
+          if [[ ! -f scripts/ci-preflight.sh ]]; then
+            echo "scripts/ci-preflight.sh missing — required when run-integration=true" >&2
+            exit 1
           fi
+          bash scripts/ci-preflight.sh
 
       - name: Integration tests
         run: |

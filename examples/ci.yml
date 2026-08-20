@@ -1,4 +1,5 @@
-# Thin wrapper example — pin reusable workflow @v1
+# Thin wrapper — pin reusable workflow @v1
+# Copy to .github/workflows/ci.yml
 name: CI
 
 on:
@@ -12,4 +13,5 @@ jobs:
     uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
     with:
       unit-command: bash scripts/ci-unit.sh
-      run-integration: false
+      run-integration: true
+      timeout-minutes: 30

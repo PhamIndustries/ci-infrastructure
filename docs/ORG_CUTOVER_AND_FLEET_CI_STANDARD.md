@@ -1236,16 +1236,16 @@ Metrics to watch post-cutover:
 
 ---
 
-## Future doc split (for implementers)
+## Doc split (implemented)
 
-When executing, split this durable design into:
+Canonical short docs (prefer these for agents):
 
-1. **`ci-templates/docs/ORG_CUTOVER.md`** — Section A + risks/rollback/billing + runner install rewrite of `RUNNER_MAC.md`
-2. **`ci-templates/docs/FLEET_CI_STANDARD.md`** — Sections B + C (agent handoff)  
-   Update `REPO_CI.md` / `TEST_LAYERS.md` to link to the standard; keep them short.
-3. **`rag-dashboard/packages/contract/docs/dashboard-ci-status.md`** — Section D schema + auth/env notes; one-paragraph pointer from Fleet Cards in `dashboard-provider.md` (“CI badges are shell-owned; not provider panes”).
+1. **`docs/AGENT_CI.md`** — start here  
+2. **`docs/FLEET_CI_STANDARD.md`** — Sections B+C (layout, markers, DoD)  
+3. **`docs/ORG_CUTOVER.md`** — Section A + rollout/risks (Ops)  
+4. **`docs/REPO_CI.md`**, **`TEST_LAYERS.md`**, **`RUNNER_MAC.md`** — operational checklists  
 
----
+This file remains the full accepted design (including §D dashboard CI strip). Dashboard contract extract → `rag-dashboard/packages/contract/docs/dashboard-ci-status.md` (when PR15 lands).
 
 ## PR Plan
 

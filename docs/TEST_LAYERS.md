@@ -1,30 +1,43 @@
 # Test layers (unit vs integration)
 
-## Unit (default CI)
+## Unit (every push/PR)
 
 - Offline / mocked
-- No dependency on OWUI `:8080`, Qdrant, domain-rag `:8794`, orch `:8787`
+- **No** dependency on OWUI `:8080`, Qdrant, domain-rag `:8794`, orch `:8787`, scrapers, NAS
 - Command: `uv run pytest -q -m "not integration"`
-- Entry: `scripts/ci-unit.sh` — **required green on every push/PR**
+- Entry: `scripts/ci-unit.sh` — **required green**
 
-## Integration (optional)
+## Integration (after unit, when enabled)
 
-- May hit localhost services
+- May hit localhost services on Skynet-MS
 - Mark tests: `@pytest.mark.integration`
 - Command: `uv run pytest -q -m integration`
 - Entry: `scripts/ci-integration.sh`
-- Enable in workflow with `run-integration: true` only when the runner host keeps those services healthy
+- Preflight: `scripts/ci-preflight.sh` (**required** when `run-integration: true` — fail closed if missing)
+- Enable with `run-integration: true` in the thin `ci.yml`
+
+### What to mark
+
+Mark a test **integration** if it:
+
+- Opens real TCP/HTTP to fixed ports (`:8787`, `:8794`, `:6335`, `:8790`, …)
+- SSHs to WSL / peers
+- Depends on a live NAS mount or tmux campaign panes
+- Would hang or flake when those services are down
+
+Ephemeral `ThreadingHTTPServer(("127.0.0.1", 0), …)` fixtures stay **unit**.
 
 ## Fleet mapping
 
-| Repo | Unit | Integration (later) |
-|------|------|---------------------|
-| rag-orchestrator | `tests/` hermetic | Live control API |
-| rag-dashboard | contract + shell pytest (+ node) | Browser e2e optional |
-| domain-rag | pytest offline | Qdrant + `:8794` |
-| autoforge / lds-docs | pytest offline | Live scrape (manual/`workflow_dispatch`) |
-| webui-model-configs | unittest offline | Live OWUI regress (existing) |
+| Repo | Unit | Integration |
+|------|------|-------------|
+| rag-orchestrator | `tests/` hermetic | Fleet service probes, index panel snap, ops NAS shape |
+| rag-dashboard | contract + shell pytest (+ node `.mjs`) | Shell `:8790` + orch provider health |
+| domain-rag | pytest offline | Qdrant `:6335` + API `:8794` (mark live tests) |
+| autoforge / lds-docs | pytest offline | Live scrape rare — prefer `workflow_dispatch` |
+| webui-model-configs | unittest offline | Keep custom `regress.yml` for live OWUI |
+| wiki-rag | pytest offline | Qdrant / API as needed |
 
 ## Rule
 
-**Nothing in `ci-unit.sh` may require live services.** That keeps CI green during ops windows (index, NAS rsync, cleanup).
+**Nothing in `ci-unit.sh` may require live services.** That keeps push CI green during ops windows (index, NAS rsync, cleanup, reboot).
