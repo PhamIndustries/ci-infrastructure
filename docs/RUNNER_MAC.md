@@ -7,7 +7,7 @@ Org **PhamIndustries** uses a **single** self-hosted runner for all org repos:
 | Field | Value |
 |-------|--------|
 | Name | `skynet-ms-org-1` |
-| Host dir | `~/Projects/actions-runner-org-1` |
+| Host dir | `~/actions-runners/skynet-ms-org-1` (not under `~/Projects`) |
 | Labels | `self-hosted`, `macOS`, `ARM64`, `skynet` |
 | LaunchAgent | `actions.runner.PhamIndustries.skynet-ms-org-1` |
 | GitHub UI | Org → Settings → Actions → Runners |
@@ -17,7 +17,7 @@ Org **PhamIndustries** uses a **single** self-hosted runner for all org repos:
 ### Ops (org runner)
 
 ```bash
-cd ~/Projects/actions-runner-org-1
+cd ~/actions-runners/skynet-ms-org-1
 ./svc.sh status
 ./svc.sh stop
 ./svc.sh start
@@ -26,14 +26,14 @@ cd ~/Projects/actions-runner-org-1
 Clear stale checkouts when idle:
 
 ```bash
-rm -rf ~/Projects/actions-runner-org-1/_work/*
+rm -rf ~/actions-runners/skynet-ms-org-1/_work/*
 ```
 
 ### Re-register (disaster only)
 
 ```bash
 ORG=PhamIndustries
-DIR="$HOME/Projects/actions-runner-org-1"
+DIR="$HOME/actions-runners/skynet-ms-org-1"
 VER=2.336.0
 # … extract runner tarball if needed …
 TOKEN=$(gh api -X POST "orgs/${ORG}/actions/runners/registration-token" --jq .token)

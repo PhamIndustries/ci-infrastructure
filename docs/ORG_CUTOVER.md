@@ -107,7 +107,7 @@ GitHub’s exact behavior for **repo-scoped** self-hosted registrations when a r
 
 ```bash
 ORG=PhamIndustries   # display name: Pham Industries
-DIR="$HOME/Projects/actions-runner-org-1"
+DIR="$HOME/actions-runners/skynet-ms-org-1"
 mkdir -p "$DIR" && cd "$DIR"
 
 curl -fsSL -o actions-runner-osx-arm64.tar.gz \
