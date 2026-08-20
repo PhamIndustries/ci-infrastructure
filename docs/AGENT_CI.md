@@ -3,7 +3,8 @@
 **Read this first.** Implement CI the same way for every fleet repo under `PhamIndustries`.  
 If the repo owns a LaunchAgent, also implement **deploy** (CI does not reload services).
 
-Org: **PhamIndustries** · Runner: **`skynet-ms-org-1`** (already online) · Workflow pin: **`@v1`**
+Short entry: [../agent/README.md](../agent/README.md).  
+Org: **PhamIndustries** · Runner: **`skynet-ms-org-1`** (already online) · Workflow pin: **`@v1`** (`ci-infrastructure`)
 
 ## Goal
 
@@ -30,7 +31,7 @@ On every push/PR to `main`/`master`:
 | Use labels `self-hosted,macOS,ARM64,skynet` (org runner already has them) | Use `ubuntu-latest` for fleet Python unit (LDS exception retired) |
 | Mark live localhost tests `@pytest.mark.integration` | Put live curls / Qdrant / orch HTTP in unit |
 | Copy scripts from `examples/` and adjust URLs | Copy-paste the whole reusable workflow into the repo |
-| Pin `uses: PhamIndustries/ci-templates/...@v1` | Pin `@main` long-term or `vuudoopham/...` |
+| Pin `uses: PhamIndustries/ci-infrastructure/...@v1` | Pin `@main` long-term or `vuudoopham/...` |
 | Add `scripts/deploy.sh` if this repo owns a LaunchAgent | Wire deploy into default CI; restart the whole fleet from one repo |
 
 ## Checklist (in order)

@@ -1,9 +1,11 @@
-# ci-templates
+# ci-infrastructure
 
 Shared **GitHub Actions** patterns for the Skynet Mac fleet under org **[PhamIndustries](https://github.com/PhamIndustries)**  
 (display name **Pham Industries**).
 
-**Agents:** start at **[docs/AGENT_CI.md](docs/AGENT_CI.md)** — single checklist to adopt CI in any fleet repo.
+**Agents:** start at **[agent/README.md](agent/README.md)** → **[docs/AGENT_CI.md](docs/AGENT_CI.md)** — checklist to adopt CI (+ deploy) in any fleet repo.
+
+Formerly `PhamIndustries/ci-templates` — see [docs/CI_INFRASTRUCTURE_MONOREPO.md](docs/CI_INFRASTRUCTURE_MONOREPO.md).
 
 ## Contract
 
@@ -16,7 +18,7 @@ Shared **GitHub Actions** patterns for the Skynet Mac fleet under org **[PhamInd
 | Unit | `scripts/ci-unit.sh` — **required**, hermetic |
 | Integration | `scripts/ci-integration.sh` + `scripts/ci-preflight.sh` when enabled |
 | Deploy | `scripts/deploy.sh` — **per repo**, on Skynet-MS (not CI); restart that repo’s LaunchAgents |
-| Reusable workflow | `PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1` |
+| Reusable workflow | `PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1` |
 
 Fork PRs do **not** run on the self-hosted runner (guard in the reusable workflow).  
 **CI ≠ CD:** a green Actions run does not reload `com.skynet.*` services — see [docs/DEPLOY.md](docs/DEPLOY.md).
@@ -41,7 +43,7 @@ on:
     branches: [master, main]
 jobs:
   ci:
-    uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
+    uses: PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1
     with:
       unit-command: bash scripts/ci-unit.sh
       run-integration: true   # set false until preflight + marks exist
@@ -54,7 +56,8 @@ Full checklist: [docs/REPO_CI.md](docs/REPO_CI.md) · Fleet standard: [docs/FLEE
 
 | Doc | Audience |
 |-----|----------|
-| [docs/AGENT_CI.md](docs/AGENT_CI.md) | **Agents** — start here |
+| [agent/README.md](agent/README.md) | **Agents** — start here |
+| [docs/AGENT_CI.md](docs/AGENT_CI.md) | Full agent CI (+ deploy) checklist |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Per-repo `scripts/deploy.sh` (restart services) |
 | [docs/REPO_CI.md](docs/REPO_CI.md) | Adopt checklist |
 | [docs/TEST_LAYERS.md](docs/TEST_LAYERS.md) | Unit vs integration |
@@ -62,7 +65,7 @@ Full checklist: [docs/REPO_CI.md](docs/REPO_CI.md) · Fleet standard: [docs/FLEE
 | [docs/FLEET_CI_STANDARD.md](docs/FLEET_CI_STANDARD.md) | Full agent implementation guide |
 | [docs/ORG_CUTOVER.md](docs/ORG_CUTOVER.md) | Org migration / Ops A–G |
 | [docs/ORG_CUTOVER_AND_FLEET_CI_STANDARD.md](docs/ORG_CUTOVER_AND_FLEET_CI_STANDARD.md) | Full accepted design (archive / deep reference) |
-| [docs/CI_INFRASTRUCTURE_MONOREPO.md](docs/CI_INFRASTRUCTURE_MONOREPO.md) | **Plan only** — fold into `ci-infrastructure` monorepo |
+| [docs/CI_INFRASTRUCTURE_MONOREPO.md](docs/CI_INFRASTRUCTURE_MONOREPO.md) | Migration record (ci-templates → here) |
 
 ## Reference implementations
 

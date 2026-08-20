@@ -9,7 +9,7 @@
 | **Amendment** | **2026-08-19** — §D Dashboard CI status (Fleet / host strip) added; K18–K20; PR15–PR17. **Revisions (same day):** K21–K27; then K21 API correction (`branch=` SoT; `exclude_pull_requests` ≠ event filter) + badge **`no_runs`** for empty `workflow_runs`. Prior org-cutover Accepted decisions unchanged. |
 | **GitHub org** | Login/slug **`PhamIndustries`**; display name **Pham Industries** |
 | **Audience** | Fleet maintainers + coding agents adopting CI in sibling repos |
-| **Related SoT** | [`vuudoopham/ci-templates`](https://github.com/vuudoopham/ci-templates) → `PhamIndustries/ci-templates` after Ops B (`@v1`) |
+| **Related SoT** | [`vuudoopham/ci-templates`](https://github.com/vuudoopham/ci-templates) → `PhamIndustries/ci-infrastructure` after Ops B (`@v1`) |
 | **Durable copies** | `ci-templates/docs/ORG_CUTOVER_AND_FLEET_CI_STANDARD.md`, `rag-orchestrator/docs/org-cutover-and-fleet-ci-standard.md` |
 | **Later split into** | `ci-templates/docs/ORG_CUTOVER.md`, `ci-templates/docs/FLEET_CI_STANDARD.md` (or expand `REPO_CI.md` + `TEST_LAYERS.md`); dash contract `dashboard-ci-status.md` (or short § in `dashboard-provider.md`) |
 
@@ -66,7 +66,7 @@ The reusable CI model already exists and works for orch/dash. Cutover unlocks **
 
 1. Create a Free GitHub Organization and transfer the fleet with minimal CI downtime.
 2. Register **org-level** self-hosted runner(s) with labels `self-hosted, macOS, ARM64, skynet`; retire per-repo personal runners and their LaunchAgents.
-3. Update all `uses: vuudoopham/ci-templates@…` pins to `PhamIndustries/ci-templates@…` **immediately after** `ci-templates` transfers and **before** transferring product repos (K13).
+3. Update all `uses: vuudoopham/ci-templates@…` pins to `PhamIndustries/ci-infrastructure@…` **immediately after** `ci-templates` transfers and **before** transferring product repos (K13).
 4. Publish a **single agent-implementable standard** for test layout, markers, scripts, thin workflows, fork guards, and DoD.
 5. Map every fleet repo to that standard (gap analysis + adoption PR order), including **`wiki-rag` in the first cutover batch**.
 6. Keep unit CI **hermetic** so push/PR stays green during ops windows (index, NAS rsync, scrape).
@@ -103,7 +103,7 @@ The reusable CI model already exists and works for orch/dash. Cutover unlocks **
 | K10 | Default **`run-integration: false`**; enable per-repo only when preflight is reliable | Unit must stay green during ops |
 | K11 | Prefer **1 org runner** initially; add a second only if queue latency hurts | Simpler ops; concurrency groups already cancel in-progress per repo |
 | K12 | webui: add **`scripts/ci-unit.sh` + thin `ci.yml`** (`run-integration: false`) **and** keep custom `regress.yml` on org/`skynet` labels; unittest repos are exempt from pytest marker DoD | Avoid forcing pytest conversion; dual workflows with a clear preferred shape |
-| K13 | **`uses:` pin flip immediately after `ci-templates` transfer**, while orch/dash are still under `vuudoopham/*`; freeze pushes during the pin window; **max CI blackout &lt; 15 min** | Actions does not follow owner redirects for `uses:`; public `PhamIndustries/ci-templates@v1` is callable from personal repos |
+| K13 | **`uses:` pin flip immediately after `ci-templates` transfer**, while orch/dash are still under `vuudoopham/*`; freeze pushes during the pin window; **max CI blackout &lt; 15 min** | Actions does not follow owner redirects for `uses:`; public `PhamIndustries/ci-infrastructure@v1` is callable from personal repos |
 | K14 | **LDS default CI moves to self-hosted Mac** (fleet labels); **remove** `ubuntu-latest` hosted job in the adoption PR — after hermetic reclassification of data-present tests (see C.5 / PR9) | One standard; hosted Ubuntu was a stopgap; Mac has production `data/` so marker audit is mandatory before the move |
 | K15 | Preflight presence when `run-integration: true` is enforced by **repo DoD / PR review today**; reusable workflow currently soft-skips missing `ci-preflight.sh` — follow-up `ci-templates` change will fail closed | Document truth vs intent; avoid agents assuming workflow already enforces it |
 | K16 | GitHub org login/slug **`PhamIndustries`**; display name **Pham Industries** (O1) | User decision 2026-08-19; slugs cannot contain spaces |
@@ -169,14 +169,14 @@ GitHub repo transfers preserve Issues/PRs/Stars; Actions history may show a disc
 | Step | Repo / action | Why this order | Post-step checklist |
 |------|---------------|----------------|---------------------|
 | 0 | Create **Pham Industries** (`PhamIndustries`) + org runner group + **billing go/no-go (O9)** | Prerequisite | Org runner Idle; abort if unexpected private-runner invoice risk |
-| 1 | **`ci-templates`** transfer | SoT; **public**; no runner needed | Tag `v1` at `PhamIndustries/ci-templates`; public clone works |
-| 1b | **Pin orch/dash (+ docs) to `PhamIndustries/ci-templates@v1`** while they still live under `vuudoopham/*` | K13 — avoid `uses:` blackout; public SoT is callable cross-owner | Green CI on **personal** runners within **&lt; 15 min**; freeze product pushes during pin window |
+| 1 | **`ci-templates`** transfer | SoT; **public**; no runner needed | Tag `v1` at `PhamIndustries/ci-infrastructure`; public clone works |
+| 1b | **Pin orch/dash (+ docs) to `PhamIndustries/ci-infrastructure@v1`** while they still live under `vuudoopham/*` | K13 — avoid `uses:` blackout; public SoT is callable cross-owner | Green CI on **personal** runners within **&lt; 15 min**; freeze product pushes during pin window |
 | 2 | **`rag-orchestrator`**, **`rag-dashboard`** transfer | Already on standard; validate org runner with known-green suites | Remotes; canary runner fate check (§A.4.1); confirm CI green on **org** runner |
 | 3 | **`webui-model-configs`** | Has self-hosted history + secret; align labels/unit script | Bind org secret `WEBUI_API_KEY` (O7); migrate off `skynet-ms` |
 | 4 | **`autoforge`**, **`lds-docs-scraper`** | Adopt standard CI (prefer before or with transfer) | LDS: self-hosted only after data-present reclassification (K14); **remove** `ubuntu-latest` |
 | 5 | **`domain-rag`** + **`wiki-rag`** (**first batch**, O5) | Marker audit (domain-rag); adopt CI (wiki-rag) | Both private; enable domain-rag integration later |
 
-**Rule:** Do not transfer a product repo until its `uses:` pin already points at `PhamIndustries/ci-templates@v1` (or it does not call the reusable workflow yet). Do not transfer a repo until either (a) it already has green CI, or (b) you accept a short CI gap and adopt the standard in the same window as the transfer.
+**Rule:** Do not transfer a product repo until its `uses:` pin already points at `PhamIndustries/ci-infrastructure@v1` (or it does not call the reusable workflow yet). Do not transfer a repo until either (a) it already has green CI, or (b) you accept a short CI gap and adopt the standard in the same window as the transfer.
 
 #### A.4 Migration sequence (runners)
 
@@ -193,7 +193,7 @@ sequenceDiagram
   You->>Org: Verify billing go/no-go (O9)
   You->>Org: Transfer ci-templates
   Note over You,Consumers: Freeze pushes; max pin window less than 15 min
-  You->>Consumers: Merge uses: PhamIndustries/ci-templates@v1 (K13)
+  You->>Consumers: Merge uses: PhamIndustries/ci-infrastructure@v1 (K13)
   Consumers->>Old: Confirm green on personal runners
   You->>Org: Transfer orch (canary) then dash
   You->>Org: Check repo vs org runner fate (A.4.1)
@@ -286,18 +286,18 @@ done
 # before
 uses: vuudoopham/ci-templates/.github/workflows/python-uv-ci.yml@v1
 # after
-uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
+uses: PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1
 ```
 
 Also update:
 
 - `ci-templates/README.md`, `docs/REPO_CI.md`, `examples/ci.yml`, `examples/ci-standalone.yml`
-- Pointers in orch/dash `Agents.md` / README (“CI: see PhamIndustries/ci-templates”)
+- Pointers in orch/dash `Agents.md` / README (“CI: see PhamIndustries/ci-infrastructure”)
 - Any hard-coded `vuudoopham/ci-templates` strings in docs
 
 **GitHub redirects:** After transfer, `github.com/vuudoopham/<repo>` typically redirects to `github.com/PhamIndustries/<repo>` for a period. Do **not** rely on redirects for `uses:` — Actions resolves the owner string explicitly; update pins.
 
-**Pin timing (K13):** Merge consumer `uses:` PRs in the **same cutover session as Ops B**, while orch/dash remotes still point at `vuudoopham/*`. Public `PhamIndustries/ci-templates@v1` is valid from personal private repos. **Freeze pushes** to orch/dash during that window; target **&lt; 15 min** from SoT transfer to green consumer CI. Only then transfer product repos (Ops C).
+**Pin timing (K13):** Merge consumer `uses:` PRs in the **same cutover session as Ops B**, while orch/dash remotes still point at `vuudoopham/*`. Public `PhamIndustries/ci-infrastructure@v1` is valid from personal private repos. **Freeze pushes** to orch/dash during that window; target **&lt; 15 min** from SoT transfer to green consumer CI. Only then transfer product repos (Ops C).
 
 #### A.6 Secrets, packages, settings
 
@@ -331,10 +331,10 @@ Also update:
 Problem after cutover?
 ├─ (a) Consumer-only (orch/dash CI red; ci-templates OK at ORG)
 │     → Fix pin/workflow on consumer; or re-register personal runner if repo
-│       transferred back to vuudoopham. v1 tag stays on PhamIndustries/ci-templates.
+│       transferred back to vuudoopham. v1 tag stays on PhamIndustries/ci-infrastructure.
 │     → Personal runner local dir may still exist; GitHub routing depends on A.4.1.
-├─ (b) SoT broken (PhamIndustries/ci-templates missing tag / workflow unusable)
-│     → Repair PhamIndustries/ci-templates in place (preferred), OR transfer ci-templates
+├─ (b) SoT broken (PhamIndustries/ci-infrastructure missing tag / workflow unusable)
+│     → Repair PhamIndustries/ci-infrastructure in place (preferred), OR transfer ci-templates
 │       back to vuudoopham and re-point all uses: to vuudoopham/…@v1.
 │     → Whoever owns the repo owns the v1 tag; do not leave duplicate tags
 │       on both owners — delete/retag deliberately.
@@ -348,7 +348,7 @@ Problem after cutover?
 
 1. Keep personal runner **binaries** on disk until 48h of green org CI on orch+dash — but see §A.4.1: “idle personal runner” may not still be a valid GitHub registration after transfer.
 2. Do not delete `~/Projects/actions-runner-*` dirs until org runner is proven.
-3. After Ops B, **`uses: vuudoopham/ci-templates@…` is invalid for Actions** (redirects do not count). Rollback of consumers requires either healthy `PhamIndustries/ci-templates` or transferring SoT back (branch b).
+3. After Ops B, **`uses: vuudoopham/ci-templates@…` is invalid for Actions** (redirects do not count). Rollback of consumers requires either healthy `PhamIndustries/ci-infrastructure` or transferring SoT back (branch b).
 4. Document transfer receipt (date, old URL, new URL, runner-fate A/B/C) in cutover notes.
 
 #### A.9 Billing — verify live truth in Ops A (go/no-go)
@@ -541,7 +541,7 @@ Make scripts executable: `chmod +x scripts/ci-*.sh`.
 `.github/workflows/ci.yml`:
 
 ```yaml
-# Thin wrapper — fleet standard from PhamIndustries/ci-templates@v1
+# Thin wrapper — fleet standard from PhamIndustries/ci-infrastructure@v1
 name: CI
 
 on:
@@ -552,7 +552,7 @@ on:
 
 jobs:
   ci:
-    uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
+    uses: PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1
     with:
       unit-command: bash scripts/ci-unit.sh
       run-integration: false
@@ -605,7 +605,7 @@ For each `tests/**/test_*.py` (and dash monorepo paths):
 - [ ] `scripts/ci-unit.sh` exists, executable, hermetic.
 - [ ] `pyproject.toml` declares `integration` marker (**pytest repos only**; unittest repos like webui are exempt — see K12 / C.5).
 - [ ] Live / data-present tests marked; `bash scripts/ci-unit.sh` passes with services down (and with production `data/` hidden where applicable).
-- [ ] Thin `.github/workflows/ci.yml` calls `PhamIndustries/ci-templates` `@v1` (or `vuudoopham` only **before** Ops B).
+- [ ] Thin `.github/workflows/ci.yml` calls `PhamIndustries/ci-infrastructure` `@v1` (or `vuudoopham` only **before** Ops B).
 - [ ] Push to default branch produces a **green** unit job on labels `self-hosted,macOS,ARM64,skynet`.
 - [ ] Same-repo PR triggers CI; documentation one-liner points at ci-templates.
 - [ ] No secrets printed; no registration tokens committed.
@@ -1000,7 +1000,7 @@ From [`ci-templates/.github/workflows/python-uv-ci.yml`](https://github.com/vuud
 ### Post-cutover caller change
 
 ```yaml
-uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
+uses: PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1
 ```
 
 ### Docs API for agents
@@ -1218,7 +1218,7 @@ Metrics to watch post-cutover:
 
 ## References
 
-- Local SoT: `/Users/vupham/Projects/ci-templates/`
+- Local SoT: `/Users/vupham/Projects/ci-infrastructure/`
   - `.github/workflows/python-uv-ci.yml`
   - `docs/REPO_CI.md`, `docs/RUNNER_MAC.md`, `docs/TEST_LAYERS.md`
   - `examples/ci.yml`, `examples/ci-standalone.yml`, `examples/ci-unit.sh`
@@ -1280,26 +1280,26 @@ Ordered, independently reviewable/mergeable PRs. Org transfer steps that are UI/
 
 ### Ops B — Transfer `ci-templates` → org
 
-- Transfer public SoT; confirm `https://github.com/PhamIndustries/ci-templates` and tag `v1` visible.
+- Transfer public SoT; confirm `https://github.com/PhamIndustries/ci-infrastructure` and tag `v1` visible.
 - **Immediately start the pin window** (freeze orch/dash pushes; budget **&lt; 15 min** to green).
 
-### PR4 — `ci-templates`: Flip documented `uses:` to `PhamIndustries/ci-templates@v1`
+### PR4 — `ci-templates`: Flip documented `uses:` to `PhamIndustries/ci-infrastructure@v1`
 
-- **Title:** `ci: point examples and docs at PhamIndustries/ci-templates@v1`
+- **Title:** `ci: point examples and docs at PhamIndustries/ci-infrastructure@v1`
 - **Files/components:** `README.md`, `docs/**`, `examples/ci.yml`, comments in `python-uv-ci.yml`
 - **Dependencies:** Ops B
 - **Description:** Mechanical string update; no input schema change. Note display name **Pham Industries** where docs mention the org.
 
 ### PR5 — `rag-orchestrator`: Pin reusable workflow to org (**before** repo transfer)
 
-- **Title:** `ci: use PhamIndustries/ci-templates@v1`
+- **Title:** `ci: use PhamIndustries/ci-infrastructure@v1`
 - **Files/components:** `.github/workflows/ci.yml`, `Agents.md` pointer
 - **Dependencies:** Ops B (SoT at `PhamIndustries`); prefer same session as PR4
-- **Description:** Single-line `uses:` change while repo is still `vuudoopham/rag-orchestrator`. Confirm green on **personal** runner. Public `PhamIndustries/ci-templates@v1` is callable cross-owner (K13).
+- **Description:** Single-line `uses:` change while repo is still `vuudoopham/rag-orchestrator`. Confirm green on **personal** runner. Public `PhamIndustries/ci-infrastructure@v1` is callable cross-owner (K13).
 
 ### PR6 — `rag-dashboard`: Pin reusable workflow to org (**before** repo transfer)
 
-- **Title:** `ci: use PhamIndustries/ci-templates@v1`
+- **Title:** `ci: use PhamIndustries/ci-infrastructure@v1`
 - **Files/components:** `.github/workflows/ci.yml`
 - **Dependencies:** Ops B; same pin window as PR5
 - **Description:** Same as PR5 for dash. End pin freeze only after both are green.

@@ -6,7 +6,7 @@
 |-------|-------|
 | Org | `PhamIndustries` (display **Pham Industries**) |
 | Runner | `skynet-ms-org-1` · labels `self-hosted,macOS,ARM64,skynet` |
-| Workflow | `PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1` |
+| Workflow | `PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1` |
 | Unit | `scripts/ci-unit.sh` hermetic |
 | Integration | `run-integration: true` + preflight + `ci-integration.sh` |
 
@@ -176,7 +176,7 @@ Make scripts executable: `chmod +x scripts/ci-*.sh`.
 `.github/workflows/ci.yml`:
 
 ```yaml
-# Thin wrapper — fleet standard from PhamIndustries/ci-templates@v1
+# Thin wrapper — fleet standard from PhamIndustries/ci-infrastructure@v1
 name: CI
 
 on:
@@ -187,7 +187,7 @@ on:
 
 jobs:
   ci:
-    uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
+    uses: PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1
     with:
       unit-command: bash scripts/ci-unit.sh
       run-integration: false
@@ -240,9 +240,9 @@ For each `tests/**/test_*.py` (and dash monorepo paths):
 - [ ] `scripts/ci-unit.sh` exists, executable, hermetic.
 - [ ] `pyproject.toml` declares `integration` marker (**pytest repos only**; unittest repos like webui are exempt — see K12 / C.5).
 - [ ] Live / data-present tests marked; `bash scripts/ci-unit.sh` passes with services down (and with production `data/` hidden where applicable).
-- [ ] Thin `.github/workflows/ci.yml` calls `PhamIndustries/ci-templates` `@v1` (or `vuudoopham` only **before** Ops B).
+- [ ] Thin `.github/workflows/ci.yml` calls `PhamIndustries/ci-infrastructure` `@v1` (or `vuudoopham` only **before** Ops B).
 - [ ] Push to default branch produces a **green** unit job on labels `self-hosted,macOS,ARM64,skynet`.
-- [ ] Same-repo PR triggers CI; documentation one-liner points at ci-templates.
+- [ ] Same-repo PR triggers CI; documentation one-liner points at ci-infrastructure.
 - [ ] No secrets printed; no registration tokens committed.
 - [ ] If `run-integration: true`: `ci-integration.sh` **and** `ci-preflight.sh` exist; preflight fails closed; integration is intentional. **Note (K15):** today’s reusable workflow **soft-skips** missing `ci-preflight.sh` — DoD / review must enforce presence until the fail-closed follow-up ships in `ci-templates`.
 - [ ] Agent ran the repo’s documented local test gate before merge.
@@ -320,7 +320,7 @@ Actions validate; LaunchAgents keep serving the previous process until `scripts/
 
 | Repo | Tests location | Unit entry today | Gaps to close | Integration candidate |
 |------|----------------|------------------|---------------|----------------------|
-| **ci-templates** | examples only | n/a | Update docs for org runners + `uses:` ORG; add `ORG_CUTOVER.md` / `FLEET_CI_STANDARD.md` | n/a |
+| **ci-infrastructure** (ex-`ci-templates`) | examples only | n/a | SoT for reusable workflow `@v1` + agent docs | n/a |
 | **rag-orchestrator** | `tests/` (~47 modules) | `scripts/ci-unit.sh` ✅ | Audit & mark any live-touching tests; optional `ci-integration.sh` for `:8787` | Live control/API when orch LaunchAgent up |
 | **rag-dashboard** | contract + shell (+ `.mjs`) | `scripts/ci-unit.sh` ✅ | Marker audit; ensure node on runner PATH | Browser e2e = out of scope |
 | **webui-model-configs** | `tests/` (unittest) | `scripts/run-unit-tests.sh` | **Preferred:** `ci-unit.sh` wraps unittest + thin `ci.yml` (`run-integration: false`) **and** keep `regress.yml` on `skynet` labels; **pytest marker DoD N/A** (unittest); org secret | Existing `regress.yml` live OWUI |

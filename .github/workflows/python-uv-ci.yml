@@ -1,5 +1,5 @@
 # Reusable Python + uv CI for Skynet fleet repos (self-hosted Mac).
-# Callers: uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
+# Callers: uses: PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1
 #
 # Labels (default): self-hosted, macOS, ARM64, skynet
 

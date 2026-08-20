@@ -51,14 +51,14 @@ GitHub repo transfers preserve Issues/PRs/Stars; Actions history may show a disc
 | Step | Repo / action | Why this order | Post-step checklist |
 |------|---------------|----------------|---------------------|
 | 0 | Create **Pham Industries** (`PhamIndustries`) + org runner group + **billing go/no-go (O9)** | Prerequisite | Org runner Idle; abort if unexpected private-runner invoice risk |
-| 1 | **`ci-templates`** transfer | SoT; **public**; no runner needed | Tag `v1` at `PhamIndustries/ci-templates`; public clone works |
-| 1b | **Pin orch/dash (+ docs) to `PhamIndustries/ci-templates@v1`** while they still live under `vuudoopham/*` | K13 — avoid `uses:` blackout; public SoT is callable cross-owner | Green CI on **personal** runners within **&lt; 15 min**; freeze product pushes during pin window |
+| 1 | **`ci-templates`** transfer | SoT; **public**; no runner needed | Tag `v1` at `PhamIndustries/ci-infrastructure`; public clone works |
+| 1b | **Pin orch/dash (+ docs) to `PhamIndustries/ci-infrastructure@v1`** while they still live under `vuudoopham/*` | K13 — avoid `uses:` blackout; public SoT is callable cross-owner | Green CI on **personal** runners within **&lt; 15 min**; freeze product pushes during pin window |
 | 2 | **`rag-orchestrator`**, **`rag-dashboard`** transfer | Already on standard; validate org runner with known-green suites | Remotes; canary runner fate check (§A.4.1); confirm CI green on **org** runner |
 | 3 | **`webui-model-configs`** | Has self-hosted history + secret; align labels/unit script | Bind org secret `WEBUI_API_KEY` (O7); migrate off `skynet-ms` |
 | 4 | **`autoforge`**, **`lds-docs-scraper`** | Adopt standard CI (prefer before or with transfer) | LDS: self-hosted only after data-present reclassification (K14); **remove** `ubuntu-latest` |
 | 5 | **`domain-rag`** + **`wiki-rag`** (**first batch**, O5) | Marker audit (domain-rag); adopt CI (wiki-rag) | Both private; enable domain-rag integration later |
 
-**Rule:** Do not transfer a product repo until its `uses:` pin already points at `PhamIndustries/ci-templates@v1` (or it does not call the reusable workflow yet). Do not transfer a repo until either (a) it already has green CI, or (b) you accept a short CI gap and adopt the standard in the same window as the transfer.
+**Rule:** Do not transfer a product repo until its `uses:` pin already points at `PhamIndustries/ci-infrastructure@v1` (or it does not call the reusable workflow yet). Do not transfer a repo until either (a) it already has green CI, or (b) you accept a short CI gap and adopt the standard in the same window as the transfer.
 
 #### A.4 Migration sequence (runners)
 
@@ -75,7 +75,7 @@ sequenceDiagram
   You->>Org: Verify billing go/no-go (O9)
   You->>Org: Transfer ci-templates
   Note over You,Consumers: Freeze pushes; max pin window less than 15 min
-  You->>Consumers: Merge uses: PhamIndustries/ci-templates@v1 (K13)
+  You->>Consumers: Merge uses: PhamIndustries/ci-infrastructure@v1 (K13)
   Consumers->>Old: Confirm green on personal runners
   You->>Org: Transfer orch (canary) then dash
   You->>Org: Check repo vs org runner fate (A.4.1)
@@ -168,18 +168,18 @@ done
 # before
 uses: vuudoopham/ci-templates/.github/workflows/python-uv-ci.yml@v1
 # after
-uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
+uses: PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1
 ```
 
 Also update:
 
 - `ci-templates/README.md`, `docs/REPO_CI.md`, `examples/ci.yml`, `examples/ci-standalone.yml`
-- Pointers in orch/dash `Agents.md` / README (“CI: see PhamIndustries/ci-templates”)
+- Pointers in orch/dash `Agents.md` / README (“CI: see PhamIndustries/ci-infrastructure”)
 - Any hard-coded `vuudoopham/ci-templates` strings in docs
 
 **GitHub redirects:** After transfer, `github.com/vuudoopham/<repo>` typically redirects to `github.com/PhamIndustries/<repo>` for a period. Do **not** rely on redirects for `uses:` — Actions resolves the owner string explicitly; update pins.
 
-**Pin timing (K13):** Merge consumer `uses:` PRs in the **same cutover session as Ops B**, while orch/dash remotes still point at `vuudoopham/*`. Public `PhamIndustries/ci-templates@v1` is valid from personal private repos. **Freeze pushes** to orch/dash during that window; target **&lt; 15 min** from SoT transfer to green consumer CI. Only then transfer product repos (Ops C).
+**Pin timing (K13):** Merge consumer `uses:` PRs in the **same cutover session as Ops B**, while orch/dash remotes still point at `vuudoopham/*`. Public `PhamIndustries/ci-infrastructure@v1` is valid from personal private repos. **Freeze pushes** to orch/dash during that window; target **&lt; 15 min** from SoT transfer to green consumer CI. Only then transfer product repos (Ops C).
 
 #### A.6 Secrets, packages, settings
 
@@ -213,10 +213,10 @@ Also update:
 Problem after cutover?
 ├─ (a) Consumer-only (orch/dash CI red; ci-templates OK at ORG)
 │     → Fix pin/workflow on consumer; or re-register personal runner if repo
-│       transferred back to vuudoopham. v1 tag stays on PhamIndustries/ci-templates.
+│       transferred back to vuudoopham. v1 tag stays on PhamIndustries/ci-infrastructure.
 │     → Personal runner local dir may still exist; GitHub routing depends on A.4.1.
-├─ (b) SoT broken (PhamIndustries/ci-templates missing tag / workflow unusable)
-│     → Repair PhamIndustries/ci-templates in place (preferred), OR transfer ci-templates
+├─ (b) SoT broken (PhamIndustries/ci-infrastructure missing tag / workflow unusable)
+│     → Repair PhamIndustries/ci-infrastructure in place (preferred), OR transfer ci-templates
 │       back to vuudoopham and re-point all uses: to vuudoopham/…@v1.
 │     → Whoever owns the repo owns the v1 tag; do not leave duplicate tags
 │       on both owners — delete/retag deliberately.
@@ -230,7 +230,7 @@ Problem after cutover?
 
 1. Keep personal runner **binaries** on disk until 48h of green org CI on orch+dash — but see §A.4.1: “idle personal runner” may not still be a valid GitHub registration after transfer.
 2. Do not delete `~/Projects/actions-runner-*` dirs until org runner is proven.
-3. After Ops B, **`uses: vuudoopham/ci-templates@…` is invalid for Actions** (redirects do not count). Rollback of consumers requires either healthy `PhamIndustries/ci-templates` or transferring SoT back (branch b).
+3. After Ops B, **`uses: vuudoopham/ci-templates@…` is invalid for Actions** (redirects do not count). Rollback of consumers requires either healthy `PhamIndustries/ci-infrastructure` or transferring SoT back (branch b).
 4. Document transfer receipt (date, old URL, new URL, runner-fate A/B/C) in cutover notes.
 
 #### A.9 Billing — verify live truth in Ops A (go/no-go)
