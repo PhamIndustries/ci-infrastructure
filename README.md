@@ -62,6 +62,7 @@ Full checklist: [docs/REPO_CI.md](docs/REPO_CI.md) · Fleet standard: [docs/FLEE
 | [docs/FLEET_CI_STANDARD.md](docs/FLEET_CI_STANDARD.md) | Full agent implementation guide |
 | [docs/ORG_CUTOVER.md](docs/ORG_CUTOVER.md) | Org migration / Ops A–G |
 | [docs/ORG_CUTOVER_AND_FLEET_CI_STANDARD.md](docs/ORG_CUTOVER_AND_FLEET_CI_STANDARD.md) | Full accepted design (archive / deep reference) |
+| [docs/CI_INFRASTRUCTURE_MONOREPO.md](docs/CI_INFRASTRUCTURE_MONOREPO.md) | **Plan only** — fold into `ci-infrastructure` monorepo |
 
 ## Reference implementations
 
