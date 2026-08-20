@@ -1,8 +1,9 @@
-# Adopt CI in a fleet repo
+# Adopt CI (+ deploy) in a fleet repo
 
 Checklist for any Python (or unittest) repo on Skynet-MS under **PhamIndustries**.
 
-**Agents:** prefer [AGENT_CI.md](AGENT_CI.md).
+**Agents:** prefer [AGENT_CI.md](AGENT_CI.md).  
+**Deploy (service restart):** [DEPLOY.md](DEPLOY.md) — CI does not reload LaunchAgents.
 
 ## 1. Runner (org — already done)
 
@@ -102,3 +103,18 @@ git push                                # Actions on skynet-ms-org-1
 - [ ] Fork PR guard respected (no self-hosted fork runs)
 
 Enable **branch protection → require CI** only after the first green run.
+
+## 6. Deploy (required if the repo owns a LaunchAgent)
+
+CI green ≠ process reloaded. Add `scripts/deploy.sh` from [../examples/deploy.sh](../examples/deploy.sh):
+
+```bash
+chmod +x scripts/deploy.sh
+bash scripts/deploy.sh --dry-run
+bash scripts/deploy.sh            # after merge / pull on Skynet-MS
+```
+
+- [ ] Labels + health URLs match this repo (see [DEPLOY.md](DEPLOY.md) ownership table)
+- [ ] `kickstart` + health probe fail closed
+- [ ] **Not** invoked from default `ci.yml`
+- [ ] AGENTS.md / README one-liner points agents at `scripts/deploy.sh` after service-affecting merges

@@ -41,3 +41,12 @@ Ephemeral `ThreadingHTTPServer(("127.0.0.1", 0), …)` fixtures stay **unit**.
 ## Rule
 
 **Nothing in `ci-unit.sh` may require live services.** That keeps push CI green during ops windows (index, NAS rsync, cleanup, reboot).
+
+## CI vs deploy
+
+| Layer | Entry | Restarts LaunchAgents? |
+|-------|-------|------------------------|
+| Unit / integration | `scripts/ci-*.sh` via Actions | **No** |
+| Deploy | `scripts/deploy.sh` on Skynet-MS | **Yes** (this repo’s labels only) |
+
+Green CI does not mean `:8787` / `:8790` / providers are running the new commit. See [DEPLOY.md](DEPLOY.md).

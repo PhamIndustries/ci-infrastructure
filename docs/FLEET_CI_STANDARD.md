@@ -31,6 +31,7 @@ repo/
     ci-unit.sh             # REQUIRED
     ci-integration.sh      # optional
     ci-preflight.sh        # optional
+    deploy.sh              # REQUIRED if repo owns a LaunchAgent (not run by CI)
   .github/workflows/
     ci.yml                 # thin wrapper
   pyproject.toml           # pytest markers
@@ -245,6 +246,8 @@ For each `tests/**/test_*.py` (and dash monorepo paths):
 - [ ] No secrets printed; no registration tokens committed.
 - [ ] If `run-integration: true`: `ci-integration.sh` **and** `ci-preflight.sh` exist; preflight fails closed; integration is intentional. **Note (K15):** today’s reusable workflow **soft-skips** missing `ci-preflight.sh` — DoD / review must enforce presence until the fail-closed follow-up ships in `ci-templates`.
 - [ ] Agent ran the repo’s documented local test gate before merge.
+- [ ] If the repo owns a LaunchAgent: `scripts/deploy.sh` exists (see [DEPLOY.md](DEPLOY.md)); not wired into default CI.
+
 #### B.10 Example commands
 
 ```bash
@@ -254,6 +257,10 @@ bash scripts/ci-unit.sh
 # Local integration (only when enabled for that repo)
 bash scripts/ci-preflight.sh && bash scripts/ci-integration.sh
 
+# Deploy on Skynet-MS after merge/pull (reloads this repo’s LaunchAgents — not CI)
+bash scripts/deploy.sh
+# bash scripts/deploy.sh --pull --sync
+
 # Orch-focused subset (dev loop — not a substitute for ci-unit.sh in CI)
 cd ~/Projects/rag-orchestrator
 uv run python -m pytest tests/test_flow_*.py tests/test_step_progress*.py tests/test_export_progress_mapping.py -q
@@ -262,6 +269,10 @@ uv run python -m pytest tests/test_flow_*.py tests/test_step_progress*.py tests/
 cd ~/Projects/rag-dashboard
 node --test apps/shell/tests/test_flow_*.mjs
 ```
+
+#### B.11 CI ≠ deploy
+
+Actions validate; LaunchAgents keep serving the previous process until `scripts/deploy.sh` (or an equivalent `launchctl kickstart`) runs on Skynet-MS. Full contract: [DEPLOY.md](DEPLOY.md).
 
 ---
 

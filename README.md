@@ -15,9 +15,11 @@ Shared **GitHub Actions** patterns for the Skynet Mac fleet under org **[PhamInd
 | Triggers | Push to `main`/`master` + PRs into those branches |
 | Unit | `scripts/ci-unit.sh` — **required**, hermetic |
 | Integration | `scripts/ci-integration.sh` + `scripts/ci-preflight.sh` when enabled |
+| Deploy | `scripts/deploy.sh` — **per repo**, on Skynet-MS (not CI); restart that repo’s LaunchAgents |
 | Reusable workflow | `PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1` |
 
-Fork PRs do **not** run on the self-hosted runner (guard in the reusable workflow).
+Fork PRs do **not** run on the self-hosted runner (guard in the reusable workflow).  
+**CI ≠ CD:** a green Actions run does not reload `com.skynet.*` services — see [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Quick adopt (agent / human)
 
@@ -25,6 +27,7 @@ Fork PRs do **not** run on the self-hosted runner (guard in the reusable workflo
 2. Add scripts (copy from [examples/](examples/)):
    - `scripts/ci-unit.sh` (**required**)
    - `scripts/ci-preflight.sh` + `scripts/ci-integration.sh` (when enabling integration)
+   - `scripts/deploy.sh` (when the repo owns a LaunchAgent — [docs/DEPLOY.md](docs/DEPLOY.md))
 3. Add pytest marker in `pyproject.toml` — see [docs/TEST_LAYERS.md](docs/TEST_LAYERS.md).
 4. Mark live-touching tests `@pytest.mark.integration`.
 5. Add thin `.github/workflows/ci.yml`:
@@ -52,6 +55,7 @@ Full checklist: [docs/REPO_CI.md](docs/REPO_CI.md) · Fleet standard: [docs/FLEE
 | Doc | Audience |
 |-----|----------|
 | [docs/AGENT_CI.md](docs/AGENT_CI.md) | **Agents** — start here |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Per-repo `scripts/deploy.sh` (restart services) |
 | [docs/REPO_CI.md](docs/REPO_CI.md) | Adopt checklist |
 | [docs/TEST_LAYERS.md](docs/TEST_LAYERS.md) | Unit vs integration |
 | [docs/RUNNER_MAC.md](docs/RUNNER_MAC.md) | Org runner (primary) + legacy per-repo |
@@ -63,8 +67,8 @@ Full checklist: [docs/REPO_CI.md](docs/REPO_CI.md) · Fleet standard: [docs/FLEE
 
 | Repo | Notes |
 |------|--------|
-| `PhamIndustries/rag-orchestrator` | Unit + integration; fleet preflight curls |
-| `PhamIndustries/rag-dashboard` | Unit (+ node `.mjs`) + shell live integration |
+| `PhamIndustries/rag-orchestrator` | Unit + integration; `scripts/deploy.sh` → `com.skynet.rag-orch` |
+| `PhamIndustries/rag-dashboard` | Unit (+ node `.mjs`) + shell live; `scripts/deploy.sh` → `com.skynet.rag-dash-shell` |
 
 ## Versioning
 
