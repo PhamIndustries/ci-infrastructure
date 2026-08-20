@@ -1,6 +1,6 @@
 # Self-hosted Mac runner (Skynet-MS)
 
-## Primary model (current): one org runner
+## Primary model: one org runner
 
 Org **PhamIndustries** uses a **single** self-hosted runner for all org repos:
 
@@ -14,7 +14,7 @@ Org **PhamIndustries** uses a **single** self-hosted runner for all org repos:
 
 **Adopting CI in a new fleet repo:** transfer/create under `PhamIndustries` and add the thin workflow — **do not** install another runner.
 
-### Ops (org runner)
+### Ops
 
 ```bash
 cd ~/actions-runners/skynet-ms-org-1
@@ -52,20 +52,9 @@ cd "$DIR"
 
 Do **not** commit registration tokens or `.credentials` / `.runner` files.
 
-## Legacy: per-repo runners (emergency / rollback)
+## Legacy per-repo runners
 
-Personal GitHub accounts cannot share one repo-scoped runner across repos. Before the org cutover we used `actions-runner-<repo>` per repository. Prefer **not** to recreate these.
-
-If you must (rollback):
-
-```bash
-REPO=rag-orchestrator
-OWNER=PhamIndustries   # or vuudoopham during rollback
-DIR="$HOME/Projects/actions-runner-${REPO}"
-# config.sh --url https://github.com/${OWNER}/${REPO} --name skynet-ms-${REPO} ...
-```
-
-Historical label `skynet-ms` (webui) is retired; use `skynet`.
+**Do not recreate.** Pre-cutover we used one runner install per personal repo (`actions-runner-<repo>`). That model is retired. Rollback history: [ORG_CUTOVER.md](ORG_CUTOVER.md). Historical label `skynet-ms` (webui) → use `skynet`.
 
 ## Security
 
