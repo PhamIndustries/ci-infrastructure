@@ -68,7 +68,7 @@ on:
     branches: [master, main]
 jobs:
   ci:
-    uses: vuudoopham/ci-templates/.github/workflows/python-uv-ci.yml@v1
+    uses: PhamIndustries/ci-templates/.github/workflows/python-uv-ci.yml@v1
     with:
       unit-command: bash scripts/ci-unit.sh
       run-integration: false
