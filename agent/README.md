@@ -9,6 +9,8 @@ Also useful:
 | Doc | Purpose |
 |-----|---------|
 | [docs/DEPLOY.md](../docs/DEPLOY.md) | Per-repo `scripts/deploy.sh` (restart LaunchAgents) |
+| [docs/LOGGING.md](../docs/LOGGING.md) | Unified log line + parser |
+| [docs/BACKUP.md](../docs/BACKUP.md) | `scripts/backup.sh` + maintenance window |
 | [docs/REPO_CI.md](../docs/REPO_CI.md) | Adopt checklist |
 | [docs/TEST_LAYERS.md](../docs/TEST_LAYERS.md) | Unit vs integration |
 | [docs/CI_INFRASTRUCTURE_MONOREPO.md](../docs/CI_INFRASTRUCTURE_MONOREPO.md) | Why this repo exists (migration record) |

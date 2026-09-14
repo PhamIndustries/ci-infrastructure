@@ -320,14 +320,18 @@ Actions validate; LaunchAgents keep serving the previous process until `scripts/
 
 | Repo | Tests location | Unit entry today | Gaps to close | Integration candidate |
 |------|----------------|------------------|---------------|----------------------|
-| **ci-infrastructure** (ex-`ci-templates`) | examples only | n/a | SoT for reusable workflow `@v1` + agent docs | n/a |
-| **rag-orchestrator** | `tests/` (~47 modules) | `scripts/ci-unit.sh` ✅ | Audit & mark any live-touching tests; optional `ci-integration.sh` for `:8787` | Live control/API when orch LaunchAgent up |
-| **rag-dashboard** | contract + shell (+ `.mjs`) | `scripts/ci-unit.sh` ✅ | Marker audit; ensure node on runner PATH | Browser e2e = out of scope |
-| **webui-model-configs** | `tests/` (unittest) | `scripts/run-unit-tests.sh` | **Preferred:** `ci-unit.sh` wraps unittest + thin `ci.yml` (`run-integration: false`) **and** keep `regress.yml` on `skynet` labels; **pytest marker DoD N/A** (unittest); org secret | Existing `regress.yml` live OWUI |
-| **lds-docs-scraper** | `tests/` | Hosted partial pytest list on `ubuntu-latest` | **K14:** move default CI to self-hosted; **remove** hosted job; full `tests/` via `ci-unit.sh`; mark **all** skip-if-data / e2e modules (`test_e2e_pipeline.py`, many `test_extract_*.py`, `test_production_structure.py`, `test_study_aids_path_layout.py`, … — ~16/30) as `integration` (or `data` excluded by unit); prove unit with `data/` hidden | Data-present suites on Mac; not live scrape |
-| **autoforge** | `tests/` | None | Add markers, `ci-unit.sh`, thin `ci.yml`; classify `*live*` tests (many are hermetic “live envelope” builders — verify) | Rare live scrape via dispatch |
-| **domain-rag** | `tests/` | None | Declare `integration` in `pyproject.toml`; mark all Qdrant live `skipif` tests; align test-plan defaults to `not integration`; `ci-unit.sh` + thin workflow | Qdrant `:6335` + API `:8794` |
-| **wiki-rag** | `tests/` (small) | None | **First batch (O5):** `ci-unit.sh` + thin `ci.yml` + markers with domain-rag wave | wiki Qdrant LaunchAgent |
+| **ci-infrastructure** | `tests/` (logger/parser) | `scripts/ci-unit.sh` ✅ | Keep examples + reusable `@v1` in sync | n/a |
+| **rag-orchestrator** | `tests/` | `scripts/ci-unit.sh` ✅ | Logging standard + backup window tests | Live control/API `:8787` |
+| **rag-dashboard** | contract + shell (+ `.mjs`) | `scripts/ci-unit.sh` ✅ | Console parser + medical-rag registry | Shell live |
+| **webui-model-configs** | `tests/` (unittest) | `scripts/ci-unit.sh` wraps unittest ✅ | Keep `regress.yml` sibling | Live OWUI regress |
+| **lds-docs-scraper** | `tests/` | `scripts/ci-unit.sh` ✅ | `run-integration: false` until data-present suite is intentional | Data-present on Mac |
+| **autoforge** | `tests/` | `scripts/ci-unit.sh` ✅ | Dashboard `jobs[]` live-only | Rare live scrape via dispatch |
+| **domain-rag** | `tests/` | `scripts/ci-unit.sh` ✅ | Logger + NAS backup `--check` | Qdrant `:6335` + API `:8794` |
+| **wiki-rag** | `tests/` | `scripts/ci-unit.sh` ✅ | Logger; no dashboard provider (search-only) | wiki Qdrant `:6333` |
+| **photo-search** | `tests/` | `scripts/ci-unit.sh` ✅ | Dismiss store + index backup | NAS mount + API `:8797` |
+| **medical-rag** | `tests/` | adopt `ci-unit.sh` (core fleet, peer of domain-rag) | Provider `:8799`, `deploy.sh`, org transfer | Qdrant `:6340` + API `:8798` |
+| **ollama-webui** | `tests/bats/` | `scripts/ci-unit.sh` ✅ (bats) | NAS backup default; WSL backup paths **retired** | Local smoke only |
+| **rag-sidecar** | `tests/` | optional thin `ci.yml` | Library only | n/a |
 
 ---
 

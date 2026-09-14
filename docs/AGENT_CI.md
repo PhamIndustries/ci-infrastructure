@@ -32,7 +32,9 @@ On every push/PR to `main`/`master`:
 | Mark live localhost tests `@pytest.mark.integration` | Put live curls / Qdrant / orch HTTP in unit |
 | Copy scripts from `examples/` and adjust URLs | Copy-paste the whole reusable workflow into the repo |
 | Pin `uses: PhamIndustries/ci-infrastructure/...@v1` | Pin `@main` long-term or `vuudoopham/...` |
-| Add `scripts/deploy.sh` if this repo owns a LaunchAgent | Wire deploy into default CI; restart the whole fleet from one repo |
+| Add `scripts/deploy.sh` if this repo owns a LaunchAgent | Wire deploy into default CI; restart the whole fleet from one repo (orch **maintenance window** is the exception) |
+| Copy `examples/logger.py` + `log_parser.py`; add format tests | Invent a second log format |
+| Copy `examples/backup.sh` if the repo holds restore-critical data | Hot-copy live SQLite/Qdrant without the backup window |
 
 ## Checklist (in order)
 

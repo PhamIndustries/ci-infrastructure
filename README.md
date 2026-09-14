@@ -18,6 +18,8 @@ Formerly `PhamIndustries/ci-templates` — see [docs/CI_INFRASTRUCTURE_MONOREPO.
 | Unit | `scripts/ci-unit.sh` — **required**, hermetic |
 | Integration | `scripts/ci-integration.sh` + `scripts/ci-preflight.sh` when enabled |
 | Deploy | `scripts/deploy.sh` — **per repo**, on Skynet-MS (not CI); restart that repo’s LaunchAgents |
+| Logging | [docs/LOGGING.md](docs/LOGGING.md) — unified text + parser; copy `examples/logger.py` |
+| Backup | [docs/BACKUP.md](docs/BACKUP.md) — per-repo `backup.sh`; orch **maintenance window** |
 | Reusable workflow | `PhamIndustries/ci-infrastructure/.github/workflows/python-uv-ci.yml@v1` |
 
 Fork PRs do **not** run on the self-hosted runner (guard in the reusable workflow).  
@@ -30,6 +32,8 @@ Fork PRs do **not** run on the self-hosted runner (guard in the reusable workflo
    - `scripts/ci-unit.sh` (**required**)
    - `scripts/ci-preflight.sh` + `scripts/ci-integration.sh` (when enabling integration)
    - `scripts/deploy.sh` (when the repo owns a LaunchAgent — [docs/DEPLOY.md](docs/DEPLOY.md))
+   - `utils/logger.py` / `log_parser.py` from [examples/](examples/) — [docs/LOGGING.md](docs/LOGGING.md)
+   - `scripts/backup.sh` from [examples/backup.sh](examples/backup.sh) — [docs/BACKUP.md](docs/BACKUP.md)
 3. Add pytest marker in `pyproject.toml` — see [docs/TEST_LAYERS.md](docs/TEST_LAYERS.md).
 4. Mark live-touching tests `@pytest.mark.integration`.
 5. Add thin `.github/workflows/ci.yml`:
@@ -59,6 +63,8 @@ Full checklist: [docs/REPO_CI.md](docs/REPO_CI.md) · Fleet standard: [docs/FLEE
 | [agent/README.md](agent/README.md) | **Agents** — start here |
 | [docs/AGENT_CI.md](docs/AGENT_CI.md) | Full agent CI (+ deploy) checklist |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Per-repo `scripts/deploy.sh` (restart services) |
+| [docs/LOGGING.md](docs/LOGGING.md) | Unified log line + parser (dashboard consoles) |
+| [docs/BACKUP.md](docs/BACKUP.md) | Per-repo backup + fleet maintenance window |
 | [docs/REPO_CI.md](docs/REPO_CI.md) | Adopt checklist |
 | [docs/TEST_LAYERS.md](docs/TEST_LAYERS.md) | Unit vs integration |
 | [docs/RUNNER_MAC.md](docs/RUNNER_MAC.md) | Org runner (primary) + legacy per-repo |
@@ -73,6 +79,7 @@ Full checklist: [docs/REPO_CI.md](docs/REPO_CI.md) · Fleet standard: [docs/FLEE
 |------|--------|
 | `PhamIndustries/rag-orchestrator` | Unit + integration; `scripts/deploy.sh` → `com.skynet.rag-orch` |
 | `PhamIndustries/rag-dashboard` | Unit (+ node `.mjs`) + shell live; `scripts/deploy.sh` → `com.skynet.rag-dash-shell` |
+| `PhamIndustries/domain-rag` | API `:8794` + provider `:8795`; medical-rag is the same shape (`:8798` / `:8799`) |
 
 ## Versioning
 

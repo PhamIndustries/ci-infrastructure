@@ -20,8 +20,15 @@
 | **domain-rag** | `com.skynet.domain-rag` (+ qdrant / provider if that change needs them) | `http://127.0.0.1:8794/health` |
 | **autoforge** | `com.skynet.autoforge-provider` | `http://127.0.0.1:8791/v1/health` |
 | **lds-docs-scraper** | `com.skynet.lds-docs-provider` | `http://127.0.0.1:8792/v1/health` |
-| **wiki-rag** | `com.skynet.wiki-rag` (+ wiki qdrant if needed) | repo health URL |
+| **wiki-rag** | `com.skynet.wiki-rag` (+ `--with-qdrant` → `com.skynet.wiki-rag-qdrant`) | `http://127.0.0.1:8793/health` |
+| **photo-search** | `com.skynet.photo-search` (+ `--with-qdrant` → `com.skynet.photo-search-qdrant`) | `http://127.0.0.1:8797/health` (API) and `/v1/health` (provider) |
+| **medical-rag** | `com.skynet.medical-rag` + `com.skynet.medical-rag-provider` (+ `--with-qdrant` → `com.skynet.medical-rag-qdrant`) | `http://127.0.0.1:8798/health` and `http://127.0.0.1:8799/v1/health` |
 | **ollama-webui** / webui stack | `com.skynet.open-webui` (Ollama app/agent separate) | `http://127.0.0.1:8080/` |
+| **rag-orchestrator** (host extras) | `com.skynet.nas-kbs-mount`, `com.skynet.spotlight-exclusions` | NAS mount path / no HTTP |
+
+**medical-rag is core fleet** (same class as domain-rag: retrieval API + index provider). wiki-rag is search-only (no dashboard index provider).
+
+**WSL is retired.** Do not install `deploy/wsl` units or kickstart WSL Open WebUI / rag-agent. Windows 5090 is a native token factory, not WSL.
 
 Provider **plist wrappers** may live under `rag-orchestrator/deploy/macos/skynet-ms/` for install convenience; **runtime ownership** still follows the product repo. Product code change → product `deploy.sh`. Orch wrapper-only change → orch deploy (optional `--with-providers`) or re-run `install-launchagents.sh`.
 
@@ -67,4 +74,6 @@ After merging or pulling changes that affect a running service in **this** repo:
 ## Related
 
 - CI adopt: [AGENT_CI.md](AGENT_CI.md) · [REPO_CI.md](REPO_CI.md)
+- Logging: [LOGGING.md](LOGGING.md)
+- Backup / maintenance window: [BACKUP.md](BACKUP.md)
 - Boot services map: `rag-orchestrator/deploy/macos/skynet-ms/README.md`
